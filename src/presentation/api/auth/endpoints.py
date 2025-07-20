@@ -33,6 +33,10 @@ async def user_signup(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Passwords should match.",
         )
+    except exceptions.PasswordIsNotSecure:  # todo: pass down the requirements
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Password is not secure."
+        )
 
     response = schemas.UserSignupResponse(
         uuid=new_user_uuid,

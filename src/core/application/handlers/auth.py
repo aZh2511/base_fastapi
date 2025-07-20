@@ -23,6 +23,8 @@ class CreateUserCommandHandler(CommandHandler[auth.CreateUserCommand]):
         if command.password_1 != command.password_2:
             raise exceptions.PasswordsShouldMatch()
 
+        password = vo.Password(command.password_1)
+
         is_there_such_user = await self._repository.check_user_exists_by_email(
             email=str(command.email)
         )
@@ -30,7 +32,8 @@ class CreateUserCommandHandler(CommandHandler[auth.CreateUserCommand]):
             raise exceptions.EmailIsAlreadyInUse()
 
         uuid = vo.UserUUID()
-        hashed_password = self._password_hasher.hash_password(command.password_1)
+
+        hashed_password = self._password_hasher.hash_password(password.value)
         user = entities.User(
             email=command.email,
             fullname=command.fullname,

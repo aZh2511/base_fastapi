@@ -16,3 +16,7 @@ class CreateUserCommand(Factory):
         mismatching_passwords = Trait(
             password_2=LazyAttribute(lambda obj: obj.password_1 + "different_password")
         )
+        insecure_password = Trait(
+            password_1="insecure_password",
+            password_2="insecure_password",
+        )

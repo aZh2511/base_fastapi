@@ -2,6 +2,10 @@ class DomainException(Exception):
     """Base domain exception"""
 
 
+class PasswordIsNotSecure(DomainException):
+    pass
+
+
 class EmailIsAlreadyInUse(DomainException):
     pass
 

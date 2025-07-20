@@ -58,9 +58,17 @@ async def test_create_user__email_must_be_unique(
         await create_user_command_handler.handle(command)
 
 
-async def test_create_user_mismatching_passwords_raise_exception(
+async def test_create_user__mismatching_passwords_raise_exception(
     create_user_command_handler,
 ) -> None:
     command = CreateUserCommand(mismatching_passwords=True)
     with pytest.raises(exceptions.PasswordsShouldMatch):
+        await create_user_command_handler.handle(command)
+
+
+async def test_create_user__validates_password_requirements(
+    create_user_command_handler,
+) -> None:
+    command = CreateUserCommand(insecure_password=True)
+    with pytest.raises(exceptions.PasswordIsNotSecure):
         await create_user_command_handler.handle(command)
