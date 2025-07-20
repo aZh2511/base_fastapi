@@ -18,7 +18,7 @@ pre-commit:
 	- pre-commit install
 
 ruff:
-	- ruff check
+	- ruff check --fix
 
 tests:
 	- coverage run -m pytest -v -s
