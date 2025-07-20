@@ -12,3 +12,7 @@ class EmailIsAlreadyInUse(DomainException):
 
 class PasswordsShouldMatch(DomainException):
     pass
+
+
+class UserWithSuchCredentialsDoesNotExist(DomainException):
+    pass

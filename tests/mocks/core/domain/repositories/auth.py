@@ -19,3 +19,13 @@ class MockedUserRepository(IUserRepository):
 
     async def add_user(self, new_user: User) -> None:
         self._tables["user"][str(new_user.uuid)] = new_user
+
+    async def get_user_by_email(self, email: str) -> User | None:
+        maybe_record = next(
+            filter(
+                lambda r: r.email == email,
+                self._tables["user"].values(),
+            ),
+            None,
+        )
+        return maybe_record

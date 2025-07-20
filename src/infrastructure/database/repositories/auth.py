@@ -22,3 +22,17 @@ class SQLUserRepository(IUserRepository):
             hashed_password=new_user.hashed_password,
         )
         self._db_session.add(new_user)
+
+    async def get_user_by_email(self, email: str) -> domain.User | None:
+        stmt = select(db.User).where(db.User.email == email)
+        result = await self._db_session.execute(stmt)
+        maybe_user = result.scalar_one_or_none()
+        if not maybe_user:
+            return None
+        user = domain.User(
+            uuid=maybe_user.uuid,
+            email=maybe_user.email,
+            fullname=maybe_user.fullname,
+            hashed_password=maybe_user.hashed_password,
+        )
+        return user

@@ -20,3 +20,11 @@ class CreateUserCommand(Factory):
             password_1="insecure_password",
             password_2="insecure_password",
         )
+
+
+class LoginCommand(Factory):
+    email: EmailStr = Faker("email")
+    password: str = Faker("password")
+
+    class Meta:
+        model = commands.LoginCommand

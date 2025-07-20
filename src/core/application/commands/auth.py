@@ -7,3 +7,8 @@ class CreateUserCommand(Command):
     password_1: str
     password_2: str
     fullname: str
+
+
+class LoginCommand(Command):
+    email: EmailStr
+    password: str

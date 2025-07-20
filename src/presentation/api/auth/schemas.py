@@ -10,3 +10,12 @@ class UserSignupRequest(BaseModel):
 
 class UserSignupResponse(BaseModel):
     uuid: str
+
+
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str
+
+
+class LoginResponse(BaseModel):
+    access_token: str
