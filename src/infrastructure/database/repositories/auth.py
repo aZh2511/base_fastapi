@@ -19,5 +19,6 @@ class SQLUserRepository(IUserRepository):
             email=new_user.email,
             fullname=new_user.fullname,
             uuid=str(new_user.uuid),
+            hashed_password=new_user.hashed_password,
         )
         self._db_session.add(new_user)

@@ -9,3 +9,4 @@ class User:
     uuid: UserUUID
     fullname: str
     email: EmailStr
+    hashed_password: str

@@ -4,3 +4,7 @@ class DomainException(Exception):
 
 class EmailIsAlreadyInUse(DomainException):
     pass
+
+
+class PasswordsShouldMatch(DomainException):
+    pass

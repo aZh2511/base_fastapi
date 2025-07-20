@@ -8,3 +8,4 @@ class User(Base):
 
     fullname: Mapped[str]
     email: Mapped[str] = mapped_column(unique=True, index=True)
+    hashed_password: Mapped[str]

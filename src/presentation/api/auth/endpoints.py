@@ -15,13 +15,23 @@ async def user_signup(
         controllers.user_signup_command_handler
     ),
 ) -> schemas.UserSignupResponse:
-    command = commands.CreateUserCommand(email=data.email, fullname=data.fullname)
+    command = commands.CreateUserCommand(
+        email=data.email,
+        fullname=data.fullname,
+        password_1=data.password_1,
+        password_2=data.password_2,
+    )
     try:
         new_user_uuid = await handler.handle(command)
     except exceptions.EmailIsAlreadyInUse:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="A user with this email already exists.",
+        )
+    except exceptions.PasswordsShouldMatch:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Passwords should match.",
         )
 
     response = schemas.UserSignupResponse(
