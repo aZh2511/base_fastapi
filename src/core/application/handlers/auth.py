@@ -4,6 +4,7 @@ from core.domain import entities
 from core.domain import value_objects as vo
 from core.domain.repositories import IUserRepository
 from .base import CommandHandler
+from core.domain import exceptions
 
 
 class CreateUserCommandHandler(CommandHandler[auth.CreateUserCommand]):
@@ -20,7 +21,7 @@ class CreateUserCommandHandler(CommandHandler[auth.CreateUserCommand]):
             email=str(command.email)
         )
         if is_there_such_user:
-            raise Exception()  # todo
+            raise exceptions.EmailIsAlreadyInUse()
 
         uuid = vo.UserUUID()
         user = entities.User(

@@ -1,9 +1,9 @@
-from fastapi import APIRouter, Depends
-
+from fastapi import APIRouter, Depends, HTTPException, status
 from core.application.commands import auth as commands
 from core.application.handlers import auth as handlers
 from presentation.api.auth import controllers
 from presentation.api.auth import schemas
+from core.domain import exceptions
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -16,7 +16,13 @@ async def user_signup(
     ),
 ) -> schemas.UserSignupResponse:
     command = commands.CreateUserCommand(email=data.email, fullname=data.fullname)
-    new_user_uuid = await handler.handle(command)
+    try:
+        new_user_uuid = await handler.handle(command)
+    except exceptions.EmailIsAlreadyInUse:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="A user with this email already exists.",
+        )
 
     response = schemas.UserSignupResponse(
         uuid=new_user_uuid,
