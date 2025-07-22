@@ -19,3 +19,9 @@ class LoginRequest(BaseModel):
 
 class LoginResponse(BaseModel):
     access_token: str
+
+
+class GetMeResponse(BaseModel):
+    uuid: str
+    email: EmailStr
+    fullname: str

@@ -1,9 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Response
 from core.application.commands import auth as commands
 from core.application.handlers import auth as handlers
+from core.application.queries import auth as queries
 from presentation.api.auth import controllers
 from presentation.api.auth import schemas
 from core.domain import exceptions
+from presentation.api.dependencies import CurrentUserJWTData
 
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -70,3 +72,18 @@ async def login(
         max_age=tokens_pair.refresh_token.alive_seconds,
     )
     return schemas.LoginResponse(access_token=tokens_pair.access_token.token)
+
+
+@router.get("/me")
+async def get_me(
+    current_user: CurrentUserJWTData,
+    handler: handlers.GetMeQueryHandler = Depends(controllers.get_me_query_handler),
+) -> schemas.GetMeResponse:
+    query = queries.GetMeQuery(user_uuid=current_user.user_uuid)
+    user_dto = await handler.handle(query)
+
+    return schemas.GetMeResponse(
+        email=user_dto.email,
+        fullname=user_dto.fullname,
+        uuid=user_dto.uuid,
+    )

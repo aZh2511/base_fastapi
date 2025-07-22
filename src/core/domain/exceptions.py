@@ -16,3 +16,7 @@ class PasswordsShouldMatch(DomainException):
 
 class UserWithSuchCredentialsDoesNotExist(DomainException):
     pass
+
+
+class SuchUserDoesNotExist(DomainException):
+    pass

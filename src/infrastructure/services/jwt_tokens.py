@@ -1,21 +1,11 @@
 from datetime import datetime, timedelta, UTC
 
 import jwt
+
+from core.application.exceptions import InvalidTokenException, TokenExpiredException
 from core.application.interfaces import IJWTService
 from core.application.dto import JWTToken, JWTTokenDTO, UserJWTTokenDTO, TokenType
 from infrastructure.config import JWTAuthConfig
-
-
-class JWTException(Exception):
-    pass
-
-
-class InvalidTokenException(JWTException):
-    pass
-
-
-class TokenExpiredException(JWTException):
-    pass
 
 
 class JWTService(IJWTService):

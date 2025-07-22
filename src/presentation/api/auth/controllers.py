@@ -5,17 +5,13 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from core.application.handlers import auth as handlers
 from core.application.interfaces import IDBSession, IJWTService
+from core.domain.interfaces import IPasswordHasher
 from core.domain.repositories import IUserRepository
 from infrastructure.config import Config
 from infrastructure.database.db_session import new_session_maker
 from infrastructure.database.repositories import SQLUserRepository
-from core.domain.interfaces import IPasswordHasher
-from infrastructure.services.jwt_tokens import JWTService
 from infrastructure.services.password_hasher import PasswordHasher
-
-
-def get_config() -> Config:
-    return Config()
+from presentation.api.dependencies import get_config, get_jwt_service
 
 
 def get_session_maker(
@@ -47,10 +43,6 @@ def get_password_hasher() -> IPasswordHasher:
     return PasswordHasher()
 
 
-def get_jwt_service(config: Config = Depends(get_config)) -> IJWTService:
-    return JWTService(config.jwt_auth)
-
-
 async def user_signup_command_handler(
     db_session: AsyncSession = Depends(get_db_session),
     repository: IUserRepository = Depends(get_repository),
@@ -72,4 +64,12 @@ async def login_command_handler(
         repository=repository,
         password_hasher=password_hasher,
         jwt_service=jwt_service,
+    )
+
+
+async def get_me_query_handler(
+    repository: IUserRepository = Depends(get_repository),
+) -> handlers.GetMeQueryHandler:
+    return handlers.GetMeQueryHandler(
+        repository=repository,
     )

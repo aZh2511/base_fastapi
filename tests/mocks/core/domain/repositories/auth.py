@@ -29,3 +29,7 @@ class MockedUserRepository(IUserRepository):
             None,
         )
         return maybe_record
+
+    async def get_user_by_uuid(self, user_uuid: str) -> User | None:
+        maybe_record = self._tables["user"].get(user_uuid)
+        return maybe_record

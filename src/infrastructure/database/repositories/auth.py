@@ -1,6 +1,7 @@
 from sqlalchemy import select
 
 from core.domain import entities as domain
+from core.domain.entities import User
 from core.domain.repositories import IUserRepository
 from infrastructure.database import models as db
 
@@ -29,10 +30,22 @@ class SQLUserRepository(IUserRepository):
         maybe_user = result.scalar_one_or_none()
         if not maybe_user:
             return None
-        user = domain.User(
-            uuid=maybe_user.uuid,
-            email=maybe_user.email,
-            fullname=maybe_user.fullname,
-            hashed_password=maybe_user.hashed_password,
-        )
+        user = self._translate_db_user_to_domain(maybe_user)
         return user
+
+    async def get_user_by_uuid(self, user_uuid: str) -> domain.User | None:
+        stmt = select(db.User).where(db.User.uuid == user_uuid)
+        result = await self._db_session.execute(stmt)
+        maybe_user = result.scalar_one_or_none()
+        if not maybe_user:
+            return None
+        user = self._translate_db_user_to_domain(maybe_user)
+        return user
+
+    def _translate_db_user_to_domain(self, user_in_db: User) -> domain.User:
+        return domain.User(  # todo: use pydantic.BaseModel
+            uuid=user_in_db.uuid,
+            email=user_in_db.email,
+            fullname=user_in_db.fullname,
+            hashed_password=user_in_db.hashed_password,
+        )

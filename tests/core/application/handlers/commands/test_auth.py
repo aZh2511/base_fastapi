@@ -1,69 +1,45 @@
+from datetime import datetime
+
 import pytest
 
 from core.application.handlers import auth as handlers
-from core.application.interfaces import IDBSession, IJWTService
 from core.domain import exceptions
-from core.domain.interfaces import IPasswordHasher
-from core.domain.repositories import IUserRepository
-from infrastructure.services.password_hasher import PasswordHasher
-from infrastructure.services.jwt_tokens import JWTService
 from tests.core.application.commands.auth import CreateUserCommand, LoginCommand
 from tests.core.domain.entities import User
-from tests.mocks.core.application.interfaces import MockedDbSession
-from tests.mocks.core.domain.repositories import MockedUserRepository
-from datetime import datetime
-
-
-@pytest.fixture
-def db_session() -> IDBSession:
-    return MockedDbSession()
-
-
-@pytest.fixture
-def repository() -> IUserRepository:
-    return MockedUserRepository()
-
-
-@pytest.fixture
-def password_hasher() -> IPasswordHasher:
-    return PasswordHasher()
 
 
 @pytest.fixture()
 def create_user_command_handler(
-    db_session, repository, password_hasher
+    db_session, user_repository, password_hasher
 ) -> handlers.CreateUserCommandHandler:
-    return handlers.CreateUserCommandHandler(db_session, repository, password_hasher)
-
-
-@pytest.fixture
-def jwt_service(config) -> IJWTService:
-    return JWTService(config.jwt_auth)
+    return handlers.CreateUserCommandHandler(
+        db_session, user_repository, password_hasher
+    )
 
 
 @pytest.fixture
 def login_command_handler(
-    repository, password_hasher, jwt_service
+    user_repository, password_hasher, jwt_service
 ) -> handlers.LoginCommandHandler:
-    return handlers.LoginCommandHandler(repository, password_hasher, jwt_service)
+    return handlers.LoginCommandHandler(user_repository, password_hasher, jwt_service)
 
 
 async def test_create_user__user_is_saved_and_can_be_retrieved(
-    create_user_command_handler, repository
+    create_user_command_handler, user_repository
 ) -> None:
     command = CreateUserCommand()
 
     result = await create_user_command_handler.handle(command)
 
     assert result is not None
-    assert await repository.check_user_exists_by_email(command.email) is True
+    assert await user_repository.check_user_exists_by_email(command.email) is True
 
 
 async def test_create_user__email_must_be_unique(
-    create_user_command_handler, repository, db_session
+    create_user_command_handler, user_repository, db_session
 ) -> None:
     existing_user = User()
-    await repository.add_user(existing_user)
+    await user_repository.add_user(existing_user)
     await db_session.commit()
 
     command = CreateUserCommand(email=existing_user.email)
@@ -89,12 +65,12 @@ async def test_create_user__validates_password_requirements(
 
 
 async def test_login__if_wrong_password_exception_is_raised(
-    login_command_handler, repository, db_session, password_hasher
+    login_command_handler, user_repository, db_session, password_hasher
 ) -> None:
     correct_password = "adfgyuio!2N"
     hashed_password = password_hasher.hash_password(correct_password)
     existing_user = User(hashed_password=hashed_password)
-    await repository.add_user(existing_user)
+    await user_repository.add_user(existing_user)
     await db_session.commit()
 
     command = LoginCommand(
@@ -114,12 +90,12 @@ async def test_login__if_user_does_not_exist_exception_is_raised(
 
 
 async def test_login__happy_path(
-    login_command_handler, repository, db_session, password_hasher
+    login_command_handler, user_repository, db_session, password_hasher
 ) -> None:
     correct_password = "adfgyuio!2N"
     hashed_password = password_hasher.hash_password(correct_password)
     existing_user = User(hashed_password=hashed_password)
-    await repository.add_user(existing_user)
+    await user_repository.add_user(existing_user)
     await db_session.commit()
 
     command = LoginCommand(email=existing_user.email, password=correct_password)
