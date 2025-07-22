@@ -7,7 +7,7 @@ from core.domain import exceptions
 from core.domain import value_objects as vo
 from core.domain.interfaces import IPasswordHasher
 from core.domain.repositories import IUserRepository
-from .base import CommandHandler
+from core.application.handlers.base import CommandHandler
 
 
 class CreateUserCommandHandler(CommandHandler[auth.CreateUserCommand]):
