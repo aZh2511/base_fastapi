@@ -2,7 +2,7 @@ from datetime import datetime
 
 import pytest
 
-from core.application.handlers import auth as handlers
+from core.application.handlers.commands import auth as handlers
 from core.domain import exceptions
 from tests.core.application.commands.auth import CreateUserCommand, LoginCommand
 from tests.core.domain.entities import User

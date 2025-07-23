@@ -1,6 +1,6 @@
 import pytest
 
-from core.application.handlers import auth as handlers
+from core.application.handlers.queries import auth as handlers
 from core.domain import exceptions
 from tests.core.application.queries.auth import GetMeQuery
 from tests.core.domain.entities import User

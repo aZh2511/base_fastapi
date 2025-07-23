@@ -51,12 +51,10 @@ class CreateUserCommandHandler(CommandHandler[auth.CreateUserCommand]):
 class LoginCommandHandler(CommandHandler[auth.LoginCommand]):
     def __init__(
         self,
-        # db_session: IDBSession,
         repository: IUserRepository,
         password_hasher: IPasswordHasher,
         jwt_service: IJWTService,
     ) -> None:
-        # self._db_session = db_session
         self._repository = repository
         self._password_hasher = password_hasher
         self._jwt_service = jwt_service
