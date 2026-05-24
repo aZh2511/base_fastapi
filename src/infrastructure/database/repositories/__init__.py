@@ -1,5 +1,3 @@
-from .auth import SQLUserRepository
+from infrastructure.database.repositories.auth import SQLUserRepository
 
-__all__ = [
-    "SQLUserRepository",
-]
+__all__ = ["SQLUserRepository"]

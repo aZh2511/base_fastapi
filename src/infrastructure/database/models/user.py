@@ -4,7 +4,7 @@ from infrastructure.database.models.base import Base
 
 
 class User(Base):
-    __tablename__ = "user"
+    __tablename__ = "users"
 
     fullname: Mapped[str]
     email: Mapped[str] = mapped_column(unique=True, index=True)

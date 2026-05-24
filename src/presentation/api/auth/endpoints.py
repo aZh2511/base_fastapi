@@ -1,94 +1,65 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Response
-from core.application.commands import auth as commands
-from core.application.handlers.queries import auth as query_handlers
-from core.application.handlers.commands import auth as cmd_handlers
-from core.application.queries import auth as queries
-from presentation.api.auth import controllers
-from presentation.api.auth import schemas
-from core.domain import exceptions
-from presentation.api.dependencies import CurrentUserJWTData
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, Response
+
+from core.application.commands.auth import CreateUserCommand, LoginCommand
+from core.application.handlers.commands.auth import (
+    CreateUserCommandHandler,
+    LoginCommandHandler,
+)
+from core.application.handlers.queries.auth import GetMeQueryHandler
+from core.application.queries.auth import GetMeQuery
+from presentation.api.auth import providers, schemas
+from presentation.dependencies import AuthenticatedUser
 
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 @router.post("/signup")
-async def user_signup(
+async def signup(
     data: schemas.UserSignupRequest,
-    handler: cmd_handlers.CreateUserCommandHandler = Depends(
-        controllers.user_signup_command_handler
-    ),
+    handler: Annotated[
+        CreateUserCommandHandler, Depends(providers.create_user_handler)
+    ],
 ) -> schemas.UserSignupResponse:
-    command = commands.CreateUserCommand(
+    command = CreateUserCommand(
         email=data.email,
         fullname=data.fullname,
         password_1=data.password_1,
         password_2=data.password_2,
     )
-    try:
-        new_user_uuid = await handler.handle(command)
-    except exceptions.EmailIsAlreadyInUse:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="A user with this email already exists.",
-        )
-    except exceptions.PasswordsShouldMatch:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Passwords should match.",
-        )
-    except exceptions.PasswordIsNotSecure:  # todo: pass down the requirements
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Password is not secure."
-        )
-
-    response = schemas.UserSignupResponse(
-        uuid=new_user_uuid,
-    )
-    return response
+    new_uuid = await handler.handle(command)
+    return schemas.UserSignupResponse(uuid=str(new_uuid))
 
 
 @router.post("/login")
 async def login(
     data: schemas.LoginRequest,
     response: Response,
-    handler: cmd_handlers.LoginCommandHandler = Depends(
-        controllers.login_command_handler
-    ),
+    handler: Annotated[LoginCommandHandler, Depends(providers.login_handler)],
 ) -> schemas.LoginResponse:
-    command = commands.LoginCommand(email=data.email, password=data.password)
-
-    try:
-        tokens_pair = await handler.handle(command)
-    except exceptions.UserWithSuchCredentialsDoesNotExist:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="User with such credentials does not exist.",
-        )
-
+    command = LoginCommand(email=data.email, password=data.password)
+    tokens = await handler.handle(command)
     response.set_cookie(
         key="refresh_token",
-        value=tokens_pair.refresh_token.token,
+        value=tokens.refresh_token.token,
         httponly=True,
         secure=True,
-        expires=tokens_pair.refresh_token.alive_seconds,
-        max_age=tokens_pair.refresh_token.alive_seconds,
+        max_age=tokens.refresh_token.alive_seconds,
     )
-    return schemas.LoginResponse(access_token=tokens_pair.access_token.token)
+    return schemas.LoginResponse(access_token=tokens.access_token.token)
 
 
 @router.get("/me")
 async def get_me(
-    current_user: CurrentUserJWTData,
-    handler: query_handlers.GetMeQueryHandler = Depends(
-        controllers.get_me_query_handler
-    ),
+    current_user: AuthenticatedUser,
+    handler: Annotated[GetMeQueryHandler, Depends(providers.get_me_handler)],
 ) -> schemas.GetMeResponse:
-    query = queries.GetMeQuery(user_uuid=current_user.user_uuid)
-    user_dto = await handler.handle(query)
-
+    query = GetMeQuery(user_uuid=current_user.user_uuid)
+    result = await handler.handle(query)
     return schemas.GetMeResponse(
-        email=user_dto.email,
-        fullname=user_dto.fullname,
-        uuid=user_dto.uuid,
+        uuid=result.uuid,
+        email=result.email,
+        fullname=result.fullname,
     )

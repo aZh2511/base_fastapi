@@ -1,8 +1,4 @@
-from .base import IRepository
-from .auth import IUserRepository
+from core.domain.repositories.auth import IUserRepository
+from core.domain.repositories.base import IRepository
 
-
-__all__ = [
-    "IRepository",
-    "IUserRepository",
-]
+__all__ = ["IRepository", "IUserRepository"]

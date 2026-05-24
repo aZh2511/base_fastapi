@@ -1,16 +1,20 @@
 class DomainException(Exception):
-    """Base domain exception"""
+    """Base domain exception."""
+
+
+class InvalidEmailFormat(DomainException):
+    pass
 
 
 class PasswordIsNotSecure(DomainException):
     pass
 
 
-class EmailIsAlreadyInUse(DomainException):
+class PasswordsShouldMatch(DomainException):
     pass
 
 
-class PasswordsShouldMatch(DomainException):
+class EmailIsAlreadyInUse(DomainException):
     pass
 
 

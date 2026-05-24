@@ -6,12 +6,12 @@ install-requirements:
 
 dev:
 	- rm -rf .venv
-	- uv venv --python 3.13 --dev
+	- uv venv --python 3.14
 	- uv sync
 
 prod:
 	- rm -rf .venv
-	- uv venv --python 3.13
+	- uv venv --python 3.14
 	- uv sync --no-dev
 
 pre-commit:
@@ -22,3 +22,21 @@ ruff:
 
 tests:
 	- coverage run -m pytest -v -s
+
+run:
+	- uv run uvicorn --app-dir src presentation.main:app --reload
+
+db-up:
+	- docker compose up -d postgres
+
+db-down:
+	- docker compose down
+
+migrate-up:
+	- uv run alembic upgrade head
+
+migrate-down:
+	- uv run alembic downgrade -1
+
+migrate-new:
+	- uv run alembic revision --autogenerate -m "$(m)"

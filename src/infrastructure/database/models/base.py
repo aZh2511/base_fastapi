@@ -1,18 +1,17 @@
 from datetime import datetime
 
 import sqlalchemy as sa
-from sqlalchemy import Column, TIMESTAMP
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy.sql import func
 
 
 class Base(DeclarativeBase):
-    uuid: Mapped[str] = mapped_column(
-        "uuid",
-        sa.Uuid,
-        primary_key=True,
+    uuid: Mapped[str] = mapped_column(sa.Uuid, primary_key=True)
+    created_at: Mapped[datetime] = mapped_column(
+        sa.TIMESTAMP(timezone=True), server_default=func.now()
     )
-    created_at: Mapped[datetime] = Column(TIMESTAMP, server_default=func.now())
-    updated_at: Mapped[datetime] = Column(
-        TIMESTAMP, server_default=func.now(), onupdate=func.current_timestamp()
+    updated_at: Mapped[datetime] = mapped_column(
+        sa.TIMESTAMP(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
     )

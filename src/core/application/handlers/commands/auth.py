@@ -1,16 +1,19 @@
-from core.application.commands import auth
-from core.application.dto import JWTTokensPair, TokenType
-from core.application.interfaces import IDBSession
-from core.application.interfaces import IJWTService, UserJWTTokenDTO
-from core.domain import entities
-from core.domain import exceptions
-from core.domain import value_objects as vo
+from core.application.commands.auth import CreateUserCommand, LoginCommand
+from core.application.dto import JWTTokensPair, TokenType, UserJWTTokenDTO
+from core.application.handlers.base import CommandHandler
+from core.application.interfaces import IDBSession, IJWTService
+from core.domain.entities import User
+from core.domain.exceptions import (
+    EmailIsAlreadyInUse,
+    PasswordsShouldMatch,
+    UserWithSuchCredentialsDoesNotExist,
+)
 from core.domain.interfaces import IPasswordHasher
 from core.domain.repositories import IUserRepository
-from core.application.handlers.base import CommandHandler
+from core.domain.value_objects import Email, Password, UserUUID
 
 
-class CreateUserCommandHandler(CommandHandler[auth.CreateUserCommand]):
+class CreateUserCommandHandler(CommandHandler[CreateUserCommand, UserUUID]):
     def __init__(
         self,
         db_session: IDBSession,
@@ -21,34 +24,30 @@ class CreateUserCommandHandler(CommandHandler[auth.CreateUserCommand]):
         self._repository = repository
         self._password_hasher = password_hasher
 
-    async def handle(self, command: auth.CreateUserCommand) -> str:
+    async def handle(self, command: CreateUserCommand) -> UserUUID:
         if command.password_1 != command.password_2:
-            raise exceptions.PasswordsShouldMatch()
+            raise PasswordsShouldMatch()
 
-        password = vo.Password(command.password_1)
+        password = Password(command.password_1)
+        email = Email(str(command.email))
 
-        is_there_such_user = await self._repository.check_user_exists_by_email(
-            email=str(command.email)
-        )
-        if is_there_such_user:
-            raise exceptions.EmailIsAlreadyInUse()
+        existing = await self._repository.get_user_by_email(email)
+        if existing is not None:
+            raise EmailIsAlreadyInUse()
 
-        uuid = vo.UserUUID()
-
-        hashed_password = self._password_hasher.hash_password(password.value)
-        user = entities.User(
-            email=command.email,
+        user = User(
+            uuid=UserUUID(),
             fullname=command.fullname,
-            uuid=uuid,
-            hashed_password=hashed_password,
+            email=email,
+            hashed_password=self._password_hasher.hash_password(password.value),
         )
 
         await self._repository.add_user(user)
         await self._db_session.commit()
-        return str(uuid)
+        return user.uuid
 
 
-class LoginCommandHandler(CommandHandler[auth.LoginCommand]):
+class LoginCommandHandler(CommandHandler[LoginCommand, JWTTokensPair]):
     def __init__(
         self,
         repository: IUserRepository,
@@ -59,27 +58,28 @@ class LoginCommandHandler(CommandHandler[auth.LoginCommand]):
         self._password_hasher = password_hasher
         self._jwt_service = jwt_service
 
-    async def handle(self, command: auth.LoginCommand) -> JWTTokensPair:
-        maybe_user = await self._repository.get_user_by_email(command.email)
-        if not maybe_user:
-            raise exceptions.UserWithSuchCredentialsDoesNotExist()
+    async def handle(self, command: LoginCommand) -> JWTTokensPair:
+        email = Email(str(command.email))
+        maybe_user = await self._repository.get_user_by_email(email)
+        if maybe_user is None:
+            raise UserWithSuchCredentialsDoesNotExist()
 
-        is_password_correct = self._password_hasher.verify_password(
+        is_correct = self._password_hasher.verify_password(
             command.password, maybe_user.hashed_password
         )
-        if not is_password_correct:
-            raise exceptions.UserWithSuchCredentialsDoesNotExist()
+        if not is_correct:
+            raise UserWithSuchCredentialsDoesNotExist()
 
-        jwt_access_token_dto = UserJWTTokenDTO(
-            user_uuid=str(maybe_user.uuid),
-            token_type=TokenType.access_token,
+        access_token = self._jwt_service.encode_token(
+            UserJWTTokenDTO(
+                user_uuid=str(maybe_user.uuid),
+                token_type=TokenType.access_token,
+            )
         )
-        access_token = self._jwt_service.encode_token(jwt_access_token_dto)
-
-        jwt_refresh_token_dto = UserJWTTokenDTO(
-            user_uuid=str(maybe_user.uuid),
-            token_type=TokenType.refresh_token,
+        refresh_token = self._jwt_service.encode_token(
+            UserJWTTokenDTO(
+                user_uuid=str(maybe_user.uuid),
+                token_type=TokenType.refresh_token,
+            )
         )
-        refresh_token = self._jwt_service.encode_token(jwt_refresh_token_dto)
-
-        return JWTTokensPair(access_token, refresh_token)
+        return JWTTokensPair(access_token=access_token, refresh_token=refresh_token)

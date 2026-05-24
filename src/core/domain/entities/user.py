@@ -1,12 +1,11 @@
 from dataclasses import dataclass
 
-from core.domain.value_objects import UserUUID
-from pydantic import EmailStr
+from core.domain.value_objects import Email, UserUUID
 
 
 @dataclass(slots=True)
 class User:
     uuid: UserUUID
     fullname: str
-    email: EmailStr
+    email: Email
     hashed_password: str

@@ -1,57 +1,58 @@
 import re
 from dataclasses import dataclass, field
 from typing import ClassVar
-from uuid import uuid4, UUID
-from core.domain import exceptions
+from uuid import UUID, uuid4
+
+from core.domain.exceptions import InvalidEmailFormat, PasswordIsNotSecure
 
 
-class VOUUID:
-    value: UUID
+@dataclass(frozen=True, slots=True)
+class UserUUID:
+    value: UUID = field(default_factory=uuid4)
 
     def __str__(self) -> str:
         return str(self.value)
 
 
-@dataclass(frozen=True)
-class UserUUID(VOUUID):
-    value: UUID = field(default_factory=uuid4)
+_EMAIL_RE: re.Pattern[str] = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
+class Email:
+    value: str
+
+    def __post_init__(self) -> None:
+        if not _EMAIL_RE.match(self.value):
+            raise InvalidEmailFormat(f"Invalid email: {self.value!r}")
+
+    def __str__(self) -> str:
+        return self.value
+
+
+@dataclass(frozen=True, slots=True)
 class Password:
     value: str = field(repr=False)
 
     MIN_LENGTH: ClassVar[int] = 8
-    SYMBOLS_REGEX: ClassVar[re.Pattern] = re.compile(r"[!@#$%^&*()]")
-    LOWERCASE_CHAR_REGEX: ClassVar[re.Pattern] = re.compile(r"[a-z]")
-    CAPITAL_CHAR_REGEX: ClassVar[re.Pattern] = re.compile(r"[A-Z]")
-    DIGIT_CHAR_REGEX: ClassVar[re.Pattern] = re.compile(r"\d")
+    _SYMBOLS: ClassVar[re.Pattern[str]] = re.compile(r"[!@#$%^&*()]")
+    _LOWERCASE: ClassVar[re.Pattern[str]] = re.compile(r"[a-z]")
+    _UPPERCASE: ClassVar[re.Pattern[str]] = re.compile(r"[A-Z]")
+    _DIGIT: ClassVar[re.Pattern[str]] = re.compile(r"\d")
 
     def __post_init__(self) -> None:
-        if not self._is_valid(self.value):
-            raise exceptions.PasswordIsNotSecure(
-                "Password does not meet security requirements."
-            )
+        if not self._is_secure(self.value):
+            raise PasswordIsNotSecure("Password does not meet security requirements.")
 
-    def _is_valid(self, value: str) -> bool:
-        is_at_least_8_chars = len(value) < self.MIN_LENGTH
-        if is_at_least_8_chars:
+    @classmethod
+    def _is_secure(cls, value: str) -> bool:
+        if len(value) < cls.MIN_LENGTH:
             return False
-
-        has_at_least_1_symbol = self.SYMBOLS_REGEX.search(value)
-        if not has_at_least_1_symbol:
+        if not cls._SYMBOLS.search(value):
             return False
-
-        has_at_least_1_lowercase_char = self.LOWERCASE_CHAR_REGEX.search(value)
-        if not has_at_least_1_lowercase_char:
+        if not cls._LOWERCASE.search(value):
             return False
-
-        has_at_least_1_capital_char = self.CAPITAL_CHAR_REGEX.search(value)
-        if not has_at_least_1_capital_char:
+        if not cls._UPPERCASE.search(value):
             return False
-
-        has_at_least_1_digit = self.DIGIT_CHAR_REGEX.search(value)
-        if not has_at_least_1_digit:
+        if not cls._DIGIT.search(value):
             return False
-
         return True

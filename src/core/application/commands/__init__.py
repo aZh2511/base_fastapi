@@ -1,8 +1,3 @@
-from .base import Command
-from .auth import CreateUserCommand
+from core.application.commands.base import Command
 
-
-__all__ = [
-    "Command",
-    "CreateUserCommand",
-]
+__all__ = ["Command"]

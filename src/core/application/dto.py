@@ -1,13 +1,13 @@
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import TypeVar
+from typing import NewType
 
 
-JWTToken = TypeVar("JWTToken", bound=str)
+JWTToken = NewType("JWTToken", str)
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class JWTTokenDTO:
     token: JWTToken
     alive_seconds: int
@@ -19,13 +19,13 @@ class TokenType(Enum):
     refresh_token = "refresh_token"
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class UserJWTTokenDTO:
     user_uuid: str
     token_type: TokenType
 
 
-@dataclass
+@dataclass(frozen=True, slots=True)
 class JWTTokensPair:
     access_token: JWTTokenDTO
     refresh_token: JWTTokenDTO

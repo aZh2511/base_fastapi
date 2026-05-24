@@ -1,11 +1,3 @@
-from pydantic import BaseModel
+from core.application.queries.base import BaseResultDTO, Query
 
-
-class BaseResultDTO(BaseModel):
-    class Config:
-        from_attributes = True
-
-
-class Query(BaseModel):
-    class ResultDTO(BaseResultDTO):
-        pass
+__all__ = ["BaseResultDTO", "Query"]

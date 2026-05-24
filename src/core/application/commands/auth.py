@@ -1,12 +1,13 @@
-from .base import Command
 from pydantic import EmailStr
+
+from core.application.commands.base import Command
 
 
 class CreateUserCommand(Command):
     email: EmailStr
+    fullname: str
     password_1: str
     password_2: str
-    fullname: str
 
 
 class LoginCommand(Command):

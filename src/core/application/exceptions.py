@@ -1,16 +1,6 @@
 class ApplicationException(Exception):
-    pass
+    """Base application exception."""
 
 
-# todo: where does it really belong to? application does not know about implementation details. hence, how can I
-#  maintain infra exceptions on the application level?
-class JWTException(ApplicationException):
-    pass
-
-
-class InvalidTokenException(JWTException):
-    pass
-
-
-class TokenExpiredException(JWTException):
+class AuthenticationFailed(ApplicationException):
     pass

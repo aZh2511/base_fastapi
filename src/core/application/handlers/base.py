@@ -1,17 +1,20 @@
-from typing import Generic, TypeVar, Any
+from typing import Generic, TypeVar
 
-from core.application import commands, queries
-
-
-CommandType = TypeVar("CommandType", bound=commands.Command)
-QueryType = TypeVar("QueryType", bound=queries.Query)
+from core.application.commands.base import Command
+from core.application.queries.base import BaseResultDTO, Query
 
 
-class CommandHandler(Generic[CommandType]):
-    async def handle(self, command: CommandType) -> Any:
+CmdT = TypeVar("CmdT", bound=Command)
+CmdResultT = TypeVar("CmdResultT")
+QueryT = TypeVar("QueryT", bound=Query)
+QueryResultT = TypeVar("QueryResultT", bound=BaseResultDTO)
+
+
+class CommandHandler(Generic[CmdT, CmdResultT]):
+    async def handle(self, command: CmdT) -> CmdResultT:
         raise NotImplementedError
 
 
-class QueryHandler(Generic[QueryType]):
-    async def handle(self, query: QueryType) -> QueryType:
+class QueryHandler(Generic[QueryT, QueryResultT]):
+    async def handle(self, query: QueryT) -> QueryResultT:
         raise NotImplementedError
