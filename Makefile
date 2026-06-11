@@ -24,7 +24,7 @@ tests:
 	- coverage run -m pytest -v -s
 
 run:
-	- uv run uvicorn --app-dir src presentation.main:app --reload
+	- uv run uvicorn --app-dir src presentation.http.main:app --reload
 
 db-up:
 	- docker compose up -d postgres
@@ -39,4 +39,4 @@ migrate-down:
 	- uv run alembic downgrade -1
 
 migrate-new:
-	- uv run alembic revision --autogenerate -m "$(m)"
+	- uv run alembic revision -m "$(m)"

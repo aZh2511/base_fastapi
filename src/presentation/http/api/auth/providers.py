@@ -11,7 +11,7 @@ from core.domain.interfaces import IPasswordHasher
 from core.domain.repositories import IUserRepository
 from infrastructure.database.repositories import SQLUserRepository
 from infrastructure.services.password_hasher import PasswordHasher
-from presentation.dependencies import JWTServiceDep, SessionDep
+from presentation.http.wiring import JWTServiceDep, SessionDep
 
 
 def get_user_repository(session: SessionDep) -> IUserRepository:

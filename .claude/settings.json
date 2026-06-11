@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '[knowledge-workflow] Before stopping: (1) did anything substantive land worth persisting via /learn? (2) does a frontend handover via /handover-frontend need to be produced for the changes? Evaluate and act if owed; otherwise stop.'"
+          }
+        ]
+      }
+    ]
+  }
+}

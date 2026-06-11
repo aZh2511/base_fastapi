@@ -1,7 +1,8 @@
 import pytest
 from faker import Faker
+
 from infrastructure.config import Config
-from tests.infrastructure.config import MockedConfig
+from tests.infrastructure.config import FakeConfig
 
 
 @pytest.fixture
@@ -11,4 +12,4 @@ def faker() -> Faker:
 
 @pytest.fixture
 def config() -> Config:
-    return MockedConfig()
+    return FakeConfig()

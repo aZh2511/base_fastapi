@@ -9,8 +9,8 @@ from core.application.handlers.commands.auth import (
 )
 from core.application.handlers.queries.auth import GetMeQueryHandler
 from core.application.queries.auth import GetMeQuery
-from presentation.api.auth import providers, schemas
-from presentation.dependencies import AuthenticatedUser
+from presentation.http.api.auth import providers, schemas
+from presentation.http.api.dependencies import AuthenticatedUser
 
 
 router = APIRouter(prefix="/auth", tags=["auth"])

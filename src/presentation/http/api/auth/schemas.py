@@ -1,7 +1,9 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, ConfigDict, EmailStr
 
 
 class UserSignupRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     email: EmailStr
     fullname: str
     password_1: str
@@ -13,6 +15,8 @@ class UserSignupResponse(BaseModel):
 
 
 class LoginRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     email: EmailStr
     password: str
 

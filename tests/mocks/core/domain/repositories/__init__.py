@@ -1,6 +1,4 @@
-from .auth import MockedUserRepository
+from tests.mocks.core.domain.repositories.auth import FakeUserRepository
 
 
-__all__ = [
-    "MockedUserRepository",
-]
+__all__ = ["FakeUserRepository"]

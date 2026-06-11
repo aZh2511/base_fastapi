@@ -1,16 +1,16 @@
-from pydantic import BaseModel
+from pydantic import Field
+from pydantic_settings import SettingsConfigDict
+
+from infrastructure.config import Config
 
 
-class PostgresConfig(BaseModel):
-    database_url: str = "some-url"
+class FakeConfig(Config):
+    """Test-only Config that supplies defaults for required fields and skips `.env`."""
 
+    model_config = SettingsConfigDict(extra="ignore")
 
-class JWTAuthConfig(BaseModel):
-    jwt_secret_key: str = "secret-key"
-    jwt_access_token_lifetime: int = 10 * 60
-    jwt_refresh_token_lifetime: int = 24 * 60 * 60
-
-
-class MockedConfig(BaseModel):
-    postgres: PostgresConfig = PostgresConfig()
-    jwt_auth: JWTAuthConfig = JWTAuthConfig()
+    database_url: str = Field(
+        default="postgresql+asyncpg://test:test@localhost:5432/test",
+        alias="DATABASE_URL",
+    )
+    jwt_secret_key: str = Field(default="test-secret-key", alias="JWT_SECRET_KEY")

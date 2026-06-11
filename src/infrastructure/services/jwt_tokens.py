@@ -35,14 +35,17 @@ class JWTService(IJWTService):
 
     def decode_token(self, token: JWTToken) -> UserJWTTokenDTO:
         try:
-            payload = jwt.decode(
-                token, self._secret_key, algorithms=[self.ALGORITHM]
-            )
+            payload = jwt.decode(token, self._secret_key, algorithms=[self.ALGORITHM])
             return UserJWTTokenDTO(
                 user_uuid=payload["user_uuid"],
                 token_type=TokenType(payload["token_type"]),
             )
-        except (jwt.ExpiredSignatureError, jwt.InvalidTokenError, KeyError, ValueError) as exc:
+        except (
+            jwt.ExpiredSignatureError,
+            jwt.InvalidTokenError,
+            KeyError,
+            ValueError,
+        ) as exc:
             raise AuthenticationFailed("Invalid or expired token") from exc
 
     def _lifetime_for(self, token_type: TokenType) -> int:

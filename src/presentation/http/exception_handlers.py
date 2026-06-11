@@ -34,9 +34,8 @@ def _lookup_status(exc_type: type[Exception]) -> int:
 async def _domain_exception_handler(
     request: Request, exc: DomainException
 ) -> JSONResponse:
-    status_code = _lookup_status(type(exc))
     return JSONResponse(
-        status_code=status_code,
+        status_code=_lookup_status(type(exc)),
         content={"detail": str(exc) or exc.__class__.__name__},
     )
 
@@ -44,9 +43,8 @@ async def _domain_exception_handler(
 async def _application_exception_handler(
     request: Request, exc: ApplicationException
 ) -> JSONResponse:
-    status_code = _lookup_status(type(exc))
     return JSONResponse(
-        status_code=status_code,
+        status_code=_lookup_status(type(exc)),
         content={"detail": str(exc) or exc.__class__.__name__},
     )
 

@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from presentation.api.auth.endpoints import router as auth_router
+from presentation.http.api.auth.endpoints import router as auth_router
 
 
 api_router = APIRouter(prefix="/api/v1")

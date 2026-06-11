@@ -1,9 +1,17 @@
 from core.application.interfaces import IDBSession
 
 
-class MockedDbSession(IDBSession):
+class FakeDBSession(IDBSession):
+    def __init__(self) -> None:
+        self.commits: int = 0
+        self.flushes: int = 0
+        self.rollbacks: int = 0
+
     async def commit(self) -> None:
-        pass
+        self.commits += 1
 
     async def flush(self) -> None:
-        pass
+        self.flushes += 1
+
+    async def rollback(self) -> None:
+        self.rollbacks += 1
